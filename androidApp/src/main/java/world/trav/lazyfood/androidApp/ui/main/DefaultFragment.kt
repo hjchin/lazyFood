@@ -1,14 +1,14 @@
 package world.trav.lazyfood.androidApp.ui.main
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
 import com.esafirm.imagepicker.features.ImagePicker
 import timber.log.Timber
+import world.trav.lazyfood.androidApp.R
 import world.trav.lazyfood.androidApp.databinding.DefaultFragmentBinding
+
 
 class DefaultFragment : Fragment() {
 
@@ -23,6 +23,12 @@ class DefaultFragment : Fragment() {
         return binding.root
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+        Timber.d("create")
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
@@ -32,9 +38,27 @@ class DefaultFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.fab.setOnClickListener {
-            Timber.d("on click")
-            ImagePicker.create(DefaultFragment@this).start()
+
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        Timber.d("create menu")
+        inflater.inflate(R.menu.default_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item?.itemId) {
+            R.id.action_add -> {
+                Timber.d("on add food photo")
+                ImagePicker.create(this).start()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+
+
     }
 
 }
