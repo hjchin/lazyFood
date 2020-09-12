@@ -47,6 +47,7 @@ class DefaultFragment : Fragment() {
         return binding.root
     }
 
+    //until thumb up and thumb down
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -72,7 +73,7 @@ class DefaultFragment : Fragment() {
             R.drawable.food5,
         )
 
-        binding.message.text = resource.size.toString() + " foods selection"
+        binding.message.text = "${resource.size} foods selection"
 
         scaleLayoutManager.minAlpha = 0.2f
         scaleLayoutManager.infinite = true
@@ -81,11 +82,13 @@ class DefaultFragment : Fragment() {
         binding.recyclerView.adapter = GalleryAdapter(this, resource)
 
         binding.fab.setOnClickListener {
-            if(!rotateCarousel) {
+            if (!rotateCarousel) {
                 rotateCarousel = true
-            handler.postDelayed(autoPlayRunnable, timeInterval)
-            }else{
+                binding.fab.setImageResource(R.drawable.stop_24px)
+                handler.postDelayed(autoPlayRunnable, timeInterval)
+            } else {
                 rotateCarousel = false
+                binding.fab.setImageResource(R.drawable.play_arrow_24px)
                 handler.removeCallbacks(autoPlayRunnable)
             }
         }
@@ -115,45 +118,41 @@ class DefaultFragment : Fragment() {
         }
     }
 
-    companion object {
+    class MyScaleLayoutManager(context: Context, itemSpace: Int) : ScaleLayoutManager(
+        context,
+        itemSpace
+    ) {
+        fun getCurrentPositionOffset(): Int {
+            if (mInterval.toInt() == 0) return 0;
+            return (mOffset / mInterval).roundToInt();
+        }
+    }
 
-        class MyScaleLayoutManager(context: Context, itemSpace: Int) : ScaleLayoutManager(
-            context,
-            itemSpace
-        ) {
-            fun getCurrentPositionOffset(): Int {
-                if (mInterval.toInt() == 0) return 0;
-                return (mOffset / mInterval).roundToInt();
-            }
+    class GalleryAdapter(private val fragment: Fragment, private val urls: List<Int>) :
+        RecyclerView.Adapter<GalleryAdapter.ViewHolder>() {
+
+        class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+
         }
 
-        class GalleryAdapter(private val fragment: Fragment, private val urls: List<Int>) :
-            RecyclerView.Adapter<GalleryAdapter.ViewHolder>() {
+        private lateinit var binding: GalleryItemBinding;
 
-            class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            binding = GalleryItemBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+            return ViewHolder(binding.root)
+        }
 
-            }
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            Timber.d("loading " + urls[position])
+            Glide.with(fragment).load(urls[position]).into(binding.imageView)
+        }
 
-            private lateinit var binding: GalleryItemBinding;
-
-            override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-                binding = GalleryItemBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
-                )
-                return ViewHolder(binding.root)
-            }
-
-            override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-                Timber.d("loading " + urls[position])
-                Glide.with(fragment).load(urls[position]).into(binding.imageView)
-            }
-
-            override fun getItemCount(): Int {
-                return urls.size
-            }
-
+        override fun getItemCount(): Int {
+            return urls.size
         }
 
     }
