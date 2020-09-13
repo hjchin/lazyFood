@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">LazyFood</string>
+    <string name="food_selection">%s food selection</string>
 </resources>
