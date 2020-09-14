@@ -34,6 +34,7 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation("com.google.android.material:material:1.2.0")
+                implementation("com.jakewharton.timber:timber:4.7.1")
             }
         }
         val androidTest by getting {
@@ -59,6 +60,10 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 }
 val packForXcode by tasks.creating(Sync::class) {

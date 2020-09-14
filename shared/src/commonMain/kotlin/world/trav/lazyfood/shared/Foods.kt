@@ -1,6 +1,4 @@
-package world.trav.lazyfood.androidApp.ui.main
-
-import timber.log.Timber
+package world.trav.lazyfood.shared
 
 //
 // Created by  on 12/9/20.
@@ -22,18 +20,18 @@ class Foods(private val list: List<Food>){
         var step = 0
         var maxWeight =  list[ci].weight
 
-        Timber.d("list size: ${list.size}, group size:${groupSize},  start index: $index")
-        Timber.d("list[$index].weight: ${list[index].weight}")
+        Log.d("list size: ${list.size}, group size:${groupSize},  start index: $index")
+        Log.d("list[$index].weight: ${list[index].weight}")
         for(i in 1 until groupSize){
             ci = if((ci+1)> list.size-1) ci+1-list.size else ci+1
-            Timber.d("list[$ci].weight: ${list[ci].weight}")
+            Log.d("list[$ci].weight: ${list[ci].weight}")
             if(list[ci].weight > maxWeight){
                 maxWeight = list[ci].weight
                 step = i
             }
         }
 
-        Timber.d("increment step: $step")
+        Log.d("increment step: $step")
         return step
     }
 
@@ -45,7 +43,7 @@ class Foods(private val list: List<Food>){
         list[index].weight -= delta
     }
 
-    fun get(index: Int): Food{
+    fun get(index: Int): Food {
         return list[index]
     }
 }

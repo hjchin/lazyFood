@@ -1,4 +1,4 @@
-package world.trav.lazyfood.androidApp.ui.main
+package world.trav.lazyfood.shared
 
 //
 // Created by  on 13/9/20.

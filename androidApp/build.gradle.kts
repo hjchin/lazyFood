@@ -24,17 +24,18 @@ dependencies {
     implementation("androidx.core:core-ktx:1.3.1")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.2.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0")
+    implementation("androidx.fragment:fragment-ktx:1.2.5")
 
     val navVersion = "2.3.0"
     implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
     implementation("androidx.navigation:navigation-ui-ktx:$navVersion")
 
-    implementation("com.github.esafirm.android-image-picker:imagepicker:2.3.2")
-    implementation("com.github.bumptech.glide:glide:4.11.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.11.0")
+    implementation("com.github.bumptech.glide:glide:4.11.0")
     implementation("com.jakewharton.timber:timber:4.7.1")
-
     implementation("rouchuan.viewpagerlayoutmanager:viewpagerlayoutmanager:2.0.22")
+    implementation("com.github.esafirm.android-image-picker:imagepicker:2.3.2")
+
 }
 android {
     compileSdkVersion(29)
@@ -48,6 +49,8 @@ android {
     compileOptions {
         sourceCompatibility(1.8)
         targetCompatibility(1.8)
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
     buildFeatures {
         viewBinding = true
@@ -56,5 +59,8 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 }
