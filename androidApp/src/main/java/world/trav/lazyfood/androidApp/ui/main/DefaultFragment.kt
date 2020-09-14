@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.*
-import androidx.core.view.ViewCompat.animate
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -13,6 +12,8 @@ import com.bumptech.glide.Glide
 import com.esafirm.imagepicker.features.ImagePicker
 import com.leochuan.CenterSnapHelper
 import com.leochuan.ScaleLayoutManager
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.internal.synchronized
 import timber.log.Timber
 import world.trav.lazyfood.androidApp.BuildConfig
 import world.trav.lazyfood.androidApp.R
@@ -31,15 +32,26 @@ class DefaultFragment : Fragment() {
     private val timeInterval = 100L
     private lateinit var foods: Foods
     private lateinit var galleryAdapter: GalleryAdapter
+    private var stopping: Boolean = false
+    private var stoppingCount: Int = Int.MAX_VALUE
 
     private val autoPlayRunnable = object : Runnable {
         override fun run() {
-            val currentPosition =
-                scaleLayoutManager.getCurrentPositionOffset() * if (scaleLayoutManager.reverseLayout) -1 else 1
-            val delta = scaleLayoutManager.getOffsetToPosition(currentPosition + 1)
-            Timber.d("current position $currentPosition, currentIndex = ${scaleLayoutManager.currentPosition}, delta " + delta)
-            binding.recyclerView.smoothScrollBy(delta, 0)
-            handler.postDelayed(this, timeInterval)
+            if (stoppingCount > 0) {
+                val currentPosition =
+                    scaleLayoutManager.getCurrentPositionOffset() * if (scaleLayoutManager.reverseLayout) -1 else 1
+                val delta = scaleLayoutManager.getOffsetToPosition(currentPosition + 1)
+                Timber.d("current position $currentPosition, currentIndex = ${scaleLayoutManager.currentPosition}, delta " + delta)
+                binding.recyclerView.smoothScrollBy(delta, 0)
+                handler.postDelayed(this, timeInterval)
+                stoppingCount--
+            } else {
+                Timber.d("stopping autoplay")
+                stopping = false
+                rotateCarousel = false
+                toggleButtons(true)
+                handler.removeCallbacks(this)
+            }
         }
     }
 
@@ -79,9 +91,9 @@ class DefaultFragment : Fragment() {
         foods = Foods(foodList)
         galleryAdapter = GalleryAdapter(this, foodList)
 
-        if(BuildConfig.DEBUG){
+        if (BuildConfig.DEBUG) {
             binding.message.text = getString(R.string.food_selection, foodList.size.toString())
-        }else{
+        } else {
             binding.message.visibility = View.GONE
         }
 
@@ -93,15 +105,20 @@ class DefaultFragment : Fragment() {
         CenterSnapHelper().attachToRecyclerView(binding.recyclerView)
 
         binding.fab.setOnClickListener {
+
+            if (stopping) return@setOnClickListener
+
             if (!rotateCarousel) {
                 rotateCarousel = true
+                stoppingCount = Int.MAX_VALUE
                 toggleButtons(false)
                 handler.postDelayed(autoPlayRunnable, timeInterval)
             } else {
-                rotateCarousel = false
-                toggleButtons(true)
 
-                handler.removeCallbacks(autoPlayRunnable)
+                if (!stopping) {
+                    stopping = true
+                    stoppingCount = foods.nextStopCount(scaleLayoutManager.currentPosition)
+                }
             }
         }
 
