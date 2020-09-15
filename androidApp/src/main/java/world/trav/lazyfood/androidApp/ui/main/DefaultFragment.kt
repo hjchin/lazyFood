@@ -23,7 +23,6 @@ import world.trav.lazyfood.shared.Food
 import world.trav.lazyfood.shared.Foods
 import kotlin.math.roundToInt
 
-
 class DefaultFragment : Fragment() {
 
     private lateinit var binding: DefaultFragmentBinding
@@ -82,8 +81,10 @@ class DefaultFragment : Fragment() {
         binding.content.container.visibility = View.GONE
         binding.loading.container.visibility = View.VISIBLE
 
-        viewModel.getFoods().observe(viewLifecycleOwner, {
-            initData()
+        viewModel.getFoods().observe(viewLifecycleOwner, { it ->
+            it?.let {
+                initData(it)
+            }
         })
 
         handler = Handler(Looper.getMainLooper())
@@ -134,15 +135,7 @@ class DefaultFragment : Fragment() {
         viewModel.loadFoods()
     }
 
-    private fun initData() {
-        val foodList = arrayListOf(
-            Food(R.drawable.food1),
-            Food(R.drawable.food2),
-            Food(R.drawable.food3),
-            Food(R.drawable.food4),
-            Food(R.drawable.food5),
-        )
-
+    private fun initData(foodList: List<Food>) {
         foods = Foods(foodList)
         galleryAdapter = GalleryAdapter(this, foodList)
 
