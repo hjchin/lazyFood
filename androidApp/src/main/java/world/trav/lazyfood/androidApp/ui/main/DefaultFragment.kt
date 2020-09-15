@@ -7,8 +7,6 @@ import android.os.Looper
 import android.view.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.esafirm.imagepicker.features.ImagePicker
@@ -36,21 +34,26 @@ class DefaultFragment : Fragment() {
     private lateinit var foods: Foods
     private lateinit var galleryAdapter: GalleryAdapter
     private var stopping: Boolean = false
-    private var stoppingCount: Int = Int.MAX_VALUE
+    private var stopIndex: Int = Int.MIN_VALUE
     private val viewModel by viewModels<DefaultViewModel>()
 
     private val autoPlayRunnable = object : Runnable {
         override fun run() {
-            if (stoppingCount > 0) {
+            if (stopIndex != scaleLayoutManager.currentPosition) {
                 val currentPosition =
                     scaleLayoutManager.getCurrentPositionOffset() * if (scaleLayoutManager.reverseLayout) -1 else 1
                 val delta = scaleLayoutManager.getOffsetToPosition(currentPosition + 1)
                 Timber.d("current position $currentPosition, currentIndex = ${scaleLayoutManager.currentPosition}, delta " + delta)
                 binding.content.recyclerView.smoothScrollBy(delta, 0)
                 handler.postDelayed(this, timeInterval)
-                stoppingCount--
             } else {
-                Timber.d("stopping autoplay")
+                Timber.d(
+                    "stopping autoplay, stopped at index ${scaleLayoutManager.currentPosition}, weight ${
+                        foods.get(
+                            scaleLayoutManager.currentPosition
+                        ).weight
+                    }"
+                )
                 stopping = false
                 rotateCarousel = false
                 toggleButtons(true)
@@ -73,10 +76,6 @@ class DefaultFragment : Fragment() {
         Timber.d("create")
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -95,15 +94,12 @@ class DefaultFragment : Fragment() {
 
             if (!rotateCarousel) {
                 rotateCarousel = true
-                stoppingCount = Int.MAX_VALUE
+                stopIndex = Int.MIN_VALUE
                 toggleButtons(false)
                 handler.postDelayed(autoPlayRunnable, timeInterval)
-            } else {
-
-                if (!stopping) {
-                    stopping = true
-                    stoppingCount = foods.nextStopCount(scaleLayoutManager.currentPosition)
-                }
+            } else if (!stopping) {
+                stopping = true
+                stopIndex = foods.nextStopIndex(scaleLayoutManager.currentPosition)
             }
         }
 
@@ -238,7 +234,7 @@ class DefaultFragment : Fragment() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             Timber.d("loading food image: ${foods[position].resourceId}")
 
-            if(BuildConfig.DEBUG){
+            if (BuildConfig.DEBUG) {
                 binding.weight.text = "food $position"
             }
 

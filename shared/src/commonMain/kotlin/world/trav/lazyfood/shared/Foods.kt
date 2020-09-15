@@ -15,9 +15,9 @@ class Foods(private val list: List<Food>){
         }
     }
 
-    fun nextStopCount(index: Int):Int{
+    fun nextStopIndex(index: Int):Int{
         var ci = index
-        var step = 0
+        var ri = ci
         var maxWeight =  list[ci].weight
 
         Log.d("list size: ${list.size}, group size:${groupSize},  start index: $index")
@@ -27,12 +27,12 @@ class Foods(private val list: List<Food>){
             Log.d("list[$ci].weight: ${list[ci].weight}")
             if(list[ci].weight > maxWeight){
                 maxWeight = list[ci].weight
-                step = i
+                ri = ci
             }
         }
 
-        Log.d("increment step: $step")
-        return step
+        Log.d("stop index: $ri")
+        return ri
     }
 
     fun voteUp(index: Int){
