@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.*
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
@@ -12,6 +13,8 @@ import com.bumptech.glide.Glide
 import com.esafirm.imagepicker.features.ImagePicker
 import com.leochuan.CenterSnapHelper
 import com.leochuan.ScaleLayoutManager
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import world.trav.lazyfood.androidApp.BuildConfig
 import world.trav.lazyfood.androidApp.R
@@ -20,7 +23,9 @@ import world.trav.lazyfood.androidApp.databinding.GalleryItemBinding
 import world.trav.lazyfood.androidApp.utils.fadeIn
 import world.trav.lazyfood.androidApp.utils.fadeOut
 import world.trav.lazyfood.shared.Food
+import world.trav.lazyfood.shared.FoodRepository
 import world.trav.lazyfood.shared.Foods
+import world.trav.lazyfood.shared.cache.DatabaseDriverFactory
 import kotlin.math.roundToInt
 
 class DefaultFragment : Fragment() {
@@ -35,6 +40,7 @@ class DefaultFragment : Fragment() {
     private var stopping: Boolean = false
     private var stopIndex: Int = Int.MIN_VALUE
     private val viewModel by viewModels<DefaultViewModel>()
+    private val mainScope = MainScope()
 
     private val autoPlayRunnable = object : Runnable {
         override fun run() {
@@ -73,6 +79,7 @@ class DefaultFragment : Fragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         Timber.d("create")
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -132,7 +139,7 @@ class DefaultFragment : Fragment() {
             binding.content.emoji.animate().alpha(0f).setDuration(2000).setListener(null)
         }
 
-        viewModel.loadFoods()
+        viewModel.loadFoods(FoodRepository(DatabaseDriverFactory(requireContext())))
     }
 
     private fun initData(foodList: List<Food>) {
@@ -231,7 +238,9 @@ class DefaultFragment : Fragment() {
                 binding.weight.text = "food $position"
             }
 
-            Glide.with(fragment).load(foods[position].resourceId).into(binding.imageView)
+            foods[position].resourceId?.let {
+                Glide.with(fragment).load(it).into(binding.imageView)
+            } ?: Glide.with(fragment).load(foods[position].imagePath).into(binding.imageView)
         }
 
         override fun getItemCount(): Int {
