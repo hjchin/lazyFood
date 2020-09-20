@@ -25,7 +25,6 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
     fun loadFoods() {
 
         viewModelScope.launch {
-            Thread.sleep(500)
             var foodList = foodRepository.getFoods().let {
                 val rs = ArrayList(it)
                 if(rs.size < 3){
@@ -33,7 +32,7 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
                         arrayListOf(
                             Food.newInstance(R.drawable.food1),
                             Food.newInstance(R.drawable.food2),
-                            Food.newInstance(R.drawable.food3)
+                            Food.newInstance(R.drawable.food4)
                         )
                     )
                 }

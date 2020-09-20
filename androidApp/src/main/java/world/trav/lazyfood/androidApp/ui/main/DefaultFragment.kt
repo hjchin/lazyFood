@@ -1,11 +1,12 @@
 package world.trav.lazyfood.androidApp.ui.main
 
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.*
-import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
@@ -14,8 +15,6 @@ import com.esafirm.imagepicker.features.ImagePicker
 import com.leochuan.CenterSnapHelper
 import com.leochuan.ScaleLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
 import timber.log.Timber
 import world.trav.lazyfood.androidApp.BuildConfig
 import world.trav.lazyfood.androidApp.R
@@ -24,9 +23,8 @@ import world.trav.lazyfood.androidApp.databinding.GalleryItemBinding
 import world.trav.lazyfood.androidApp.utils.fadeIn
 import world.trav.lazyfood.androidApp.utils.fadeOut
 import world.trav.lazyfood.shared.Food
-import world.trav.lazyfood.shared.FoodRepository
 import world.trav.lazyfood.shared.Foods
-import world.trav.lazyfood.shared.cache.DatabaseDriverFactory
+import world.trav.lazyfood.shared.Foods.Companion.GROUP_SIZE
 import kotlin.math.roundToInt
 
 @AndroidEntryPoint
@@ -242,6 +240,17 @@ class DefaultFragment : Fragment() {
             foods[position].resourceId?.let {
                 Glide.with(fragment).load(it).into(binding.imageView)
             } ?: Glide.with(fragment).load(foods[position].imagePath).into(binding.imageView)
+
+            binding.delete.setOnClickListener {
+                if(foods[position].isDefault){
+                    val builder =  AlertDialog.Builder(fragment.requireContext())
+                    builder.setMessage(fragment.getString(R.string.the_image_will_be_automatically_removed, GROUP_SIZE.toString()))
+                        .setTitle(R.string.info)
+                    builder.setPositiveButton(R.string.ok,
+                        DialogInterface.OnClickListener { dialog, id -> dialog.dismiss()})
+                    builder.create().show()
+                }
+            }
         }
 
         override fun getItemCount(): Int {

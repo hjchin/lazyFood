@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">LazyFood</string>
     <string name="food_selection">%s food selection</string>
+    <string name="info">Info</string>
+    <string name="the_image_will_be_automatically_removed">The default images will be automatically removed when you have added %s images.</string>
+    <string name="ok">Ok</string>
 </resources>

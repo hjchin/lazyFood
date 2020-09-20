@@ -7,10 +7,12 @@ package world.trav.lazyfood.shared
 class Foods(private val list: List<Food>){
 
     private val delta: Double = 1/(list.size * 1.0)
-    private val groupSize = 3
+    companion object{
+        const val GROUP_SIZE = 3
+    }
 
     init{
-        if(list.size < groupSize){
+        if(list.size < GROUP_SIZE){
             throw Exception("minimum food list size is 3")
         }
     }
@@ -20,9 +22,9 @@ class Foods(private val list: List<Food>){
         var ri = ci
         var maxWeight =  list[ci].weight
 
-        Log.d("list size: ${list.size}, group size:${groupSize},  start index: $index")
+        Log.d("list size: ${list.size}, group size:${GROUP_SIZE},  start index: $index")
         Log.d("list[$index].weight: ${list[index].weight}")
-        for(i in 1 until groupSize){
+        for(i in 1 until GROUP_SIZE){
             ci = if((ci+1)> list.size-1) ci+1-list.size else ci+1
             Log.d("list[$ci].weight: ${list[ci].weight}")
             if(list[ci].weight > maxWeight){
