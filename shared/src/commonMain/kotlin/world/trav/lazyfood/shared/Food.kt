@@ -19,5 +19,11 @@ class Food{
                 it.resourceId = resourceId
             }
         }
+
+        fun newInstance(imagePath: String): Food{
+            return Food().also {
+                it.imagePath = imagePath
+            }
+        }
     }
 }

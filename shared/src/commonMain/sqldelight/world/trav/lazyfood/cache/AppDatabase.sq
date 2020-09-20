@@ -14,3 +14,11 @@ WHERE id = ?;
 selectAllFood:
 SELECT *
 FROM Food;
+
+selectSortedFood:
+SELECT *
+FROM Food
+ORDER BY id DESC;
+
+selectLastInsertedFood:
+SELECT last_insert_rowid();

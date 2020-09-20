@@ -12,6 +12,10 @@ class FoodRepository(databaseDriverFactory: DatabaseDriverFactory){
     private val database = Database(databaseDriverFactory)
 
     @Throws(Exception::class) suspend fun getFoods(): List<Food> {
-        return database.selectAllFood()
+        return database.selectSortedFood()
+    }
+
+    @Throws(Exception::class) suspend fun insertFood(food: Food): Long{
+        return database.insertFood(food)
     }
 }

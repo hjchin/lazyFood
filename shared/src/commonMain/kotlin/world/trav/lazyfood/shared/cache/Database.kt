@@ -18,6 +18,21 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
         return dbQuery.selectAllFood(::mapFood).executeAsList()
     }
 
+    fun selectSortedFood(): List<Food>{
+        return dbQuery.selectSortedFood(::mapFood).executeAsList()
+    }
+
+    fun insertFood(food: Food): Long{
+        var id: Long = 0
+
+        dbQuery.transaction {
+            dbQuery.insertFood(food.imagePath)
+            id = dbQuery.selectLastInsertedFood().executeAsOne()
+        }
+
+        return id
+    }
+
     private fun mapFood(id: Long, imagePath: String): Food{
         return Food().also {
             it.id = id

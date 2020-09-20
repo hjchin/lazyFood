@@ -1,10 +1,15 @@
 package world.trav.lazyfood.androidApp.ui.main
 
+import android.content.ContentResolver
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.FileUtils
 import android.os.Handler
 import android.os.Looper
+import android.provider.OpenableColumns
 import android.view.*
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
@@ -25,11 +30,15 @@ import world.trav.lazyfood.androidApp.utils.fadeOut
 import world.trav.lazyfood.shared.Food
 import world.trav.lazyfood.shared.Foods
 import world.trav.lazyfood.shared.Foods.Companion.GROUP_SIZE
+import java.io.File
+import java.io.FileInputStream
 import kotlin.math.roundToInt
+import java.io.FileOutputStream as FileOutputStream
 
 @AndroidEntryPoint
 class DefaultFragment : Fragment() {
 
+    private lateinit var foodList: ArrayList<Food>
     private lateinit var binding: DefaultFragmentBinding
     private var rotateCarousel: Boolean = false
     private lateinit var scaleLayoutManager: MyScaleLayoutManager
@@ -78,14 +87,10 @@ class DefaultFragment : Fragment() {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
         Timber.d("create")
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding.content.container.visibility = View.GONE
-        binding.loading.container.visibility = View.VISIBLE
 
         viewModel.getFoods().observe(viewLifecycleOwner, { it ->
             it?.let {
@@ -93,7 +98,20 @@ class DefaultFragment : Fragment() {
             }
         })
 
+        viewModel.getLastAddedFood().observe(viewLifecycleOwner, { food ->
+            food?.let {
+                foodList.add(0,food)
+                Timber.d("food list size: ${foodList.size}")
+                scaleLayoutManager = createLayoutManager()
+                binding.content.recyclerView.layoutManager = scaleLayoutManager
+                binding.content.recyclerView.adapter = GalleryAdapter(this, foodList)
+            }
+        })
+
         handler = Handler(Looper.getMainLooper())
+
+        binding.content.container.visibility = View.GONE
+        binding.loading.container.visibility = View.VISIBLE
 
         binding.content.fab.setOnClickListener {
 
@@ -141,27 +159,34 @@ class DefaultFragment : Fragment() {
         viewModel.loadFoods()
     }
 
-    private fun initData(foodList: List<Food>) {
+    private fun initData(fList: List<Food>) {
+        this.foodList = ArrayList(fList)
+
         foods = Foods(foodList)
         galleryAdapter = GalleryAdapter(this, foodList)
 
         if (BuildConfig.DEBUG) {
             binding.content.message.text =
-                getString(R.string.food_selection, foodList.size.toString())
+                getString(R.string.food_selection, fList.size.toString())
         } else {
             binding.content.message.visibility = View.GONE
         }
 
-        scaleLayoutManager = MyScaleLayoutManager(requireContext(), dp2px(requireContext(), 1f))
-        scaleLayoutManager.minAlpha = 0.2f
-        scaleLayoutManager.infinite = true
-        scaleLayoutManager.moveSpeed = 5f
+        scaleLayoutManager = createLayoutManager()
         binding.content.recyclerView.layoutManager = scaleLayoutManager
         binding.content.recyclerView.adapter = galleryAdapter
         CenterSnapHelper().attachToRecyclerView(binding.content.recyclerView)
 
         binding.loading.container.fadeOut()
         binding.content.container.fadeIn()
+    }
+
+    private fun createLayoutManager(): MyScaleLayoutManager {
+        return MyScaleLayoutManager(requireContext(), dp2px(requireContext(), 1f)).also {
+            it.minAlpha = 0.2f
+            it.infinite = true
+            it.moveSpeed = 5f
+        }
     }
 
     private fun toggleButtons(run: Boolean) {
@@ -199,6 +224,20 @@ class DefaultFragment : Fragment() {
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (ImagePicker.shouldHandle(requestCode, resultCode, data)) {
+            Timber.d("image return ${ImagePicker.getFirstImageOrNull(data)}")
+            val image = ImagePicker.getFirstImageOrNull(data)
+
+            image?.let {
+                context?.let{
+                    viewModel.addFoodByUri(it, image.uri)
+                }
+            }
         }
     }
 
