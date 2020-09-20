@@ -1,5 +1,6 @@
 package world.trav.lazyfood.androidApp.ui.main
 
+import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,7 +13,8 @@ import world.trav.lazyfood.shared.FoodRepository
 //
 // Created by  on 13/9/20.
 //
-class DefaultViewModel : ViewModel() {
+
+class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepository) : ViewModel() {
 
     private var foods = MutableLiveData<List<Food>>()
 
@@ -20,20 +22,22 @@ class DefaultViewModel : ViewModel() {
         return foods
     }
 
-    fun loadFoods(foodRepository: FoodRepository) {
+    fun loadFoods() {
 
         viewModelScope.launch {
             Thread.sleep(500)
             var foodList = foodRepository.getFoods().let {
-                if (it.isNotEmpty()) {
-                    it
-                }else{
-                    arrayListOf(
-                        Food.newInstance(R.drawable.food1),
-                        Food.newInstance(R.drawable.food2),
-                        Food.newInstance(R.drawable.food3)
+                val rs = ArrayList(it)
+                if(rs.size < 3){
+                    rs.addAll(
+                        arrayListOf(
+                            Food.newInstance(R.drawable.food1),
+                            Food.newInstance(R.drawable.food2),
+                            Food.newInstance(R.drawable.food3)
+                        )
                     )
                 }
+                rs
             }
 
             foods.postValue(foodList)

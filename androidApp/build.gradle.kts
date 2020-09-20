@@ -1,8 +1,13 @@
+import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
+
 plugins {
     id("com.android.application")
     kotlin("android")
+    kotlin("kapt")
     id("kotlin-android")
     id("kotlin-android-extensions")
+    id("dagger.hilt.android.plugin")
+
 }
 group = "world.trav.lazyfood"
 version = "1.0-SNAPSHOT"
@@ -22,9 +27,11 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.2.0")
     implementation("androidx.constraintlayout:constraintlayout:2.0.1")
     implementation("androidx.core:core-ktx:1.3.1")
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.2.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0")
     implementation("androidx.fragment:fragment-ktx:1.2.5")
+
+    val lifeCycleKtxVersion = "2.2.0"
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifeCycleKtxVersion")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifeCycleKtxVersion")
 
     val navVersion = "2.3.0"
     implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
@@ -38,7 +45,16 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
+
+    val daggerHiltVersion = "2.28-alpha"
+    implementation("com.google.dagger:hilt-android:$daggerHiltVersion")
+    kapt("com.google.dagger:hilt-android-compiler:$daggerHiltVersion")
+
+    val hiltVersion = "1.0.0-alpha02"
+    implementation("androidx.hilt:hilt-lifecycle-viewmodel:$hiltVersion")
+    kapt("androidx.hilt:hilt-compiler:$hiltVersion")
 }
+
 android {
     compileSdkVersion(29)
     defaultConfig {
@@ -51,8 +67,6 @@ android {
     compileOptions {
         sourceCompatibility(1.8)
         targetCompatibility(1.8)
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
     }
     buildFeatures {
         viewBinding = true
@@ -65,4 +79,8 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+}
+
+kapt {
+    correctErrorTypes = true
 }

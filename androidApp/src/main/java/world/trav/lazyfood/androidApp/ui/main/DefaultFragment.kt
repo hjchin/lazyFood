@@ -13,6 +13,7 @@ import com.bumptech.glide.Glide
 import com.esafirm.imagepicker.features.ImagePicker
 import com.leochuan.CenterSnapHelper
 import com.leochuan.ScaleLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -28,6 +29,7 @@ import world.trav.lazyfood.shared.Foods
 import world.trav.lazyfood.shared.cache.DatabaseDriverFactory
 import kotlin.math.roundToInt
 
+@AndroidEntryPoint
 class DefaultFragment : Fragment() {
 
     private lateinit var binding: DefaultFragmentBinding
@@ -40,7 +42,6 @@ class DefaultFragment : Fragment() {
     private var stopping: Boolean = false
     private var stopIndex: Int = Int.MIN_VALUE
     private val viewModel by viewModels<DefaultViewModel>()
-    private val mainScope = MainScope()
 
     private val autoPlayRunnable = object : Runnable {
         override fun run() {
@@ -139,7 +140,7 @@ class DefaultFragment : Fragment() {
             binding.content.emoji.animate().alpha(0f).setDuration(2000).setListener(null)
         }
 
-        viewModel.loadFoods(FoodRepository(DatabaseDriverFactory(requireContext())))
+        viewModel.loadFoods()
     }
 
     private fun initData(foodList: List<Food>) {
