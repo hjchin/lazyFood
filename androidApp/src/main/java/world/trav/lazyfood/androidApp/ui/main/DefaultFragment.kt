@@ -21,6 +21,7 @@ import world.trav.lazyfood.androidApp.BuildConfig
 import world.trav.lazyfood.androidApp.R
 import world.trav.lazyfood.androidApp.databinding.DefaultFragmentBinding
 import world.trav.lazyfood.androidApp.databinding.GalleryItemBinding
+import world.trav.lazyfood.androidApp.ui.ViewData
 import world.trav.lazyfood.androidApp.utils.fadeIn
 import world.trav.lazyfood.androidApp.utils.fadeOut
 import world.trav.lazyfood.shared.Food
@@ -31,7 +32,6 @@ import kotlin.math.roundToInt
 @AndroidEntryPoint
 class DefaultFragment : Fragment() {
 
-    private lateinit var foodList: ArrayList<Food>
     private lateinit var binding: DefaultFragmentBinding
     private var rotateCarousel: Boolean = false
     private lateinit var scaleLayoutManager: MyScaleLayoutManager
@@ -82,27 +82,24 @@ class DefaultFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.getFoods().observe(viewLifecycleOwner, { it ->
-            it?.let {
-                initData(it)
-            }
-        })
-
-        viewModel.getLastAddedFood().observe(viewLifecycleOwner, { food ->
-            food?.let {
-                foodList.add(0, food)
-                Timber.d("food list size: ${foodList.size}")
-                setupRecyclerView()
-                viewModel.clearLastAddedFood()
-            }
-        })
-
-        viewModel.getLastRemovedFood().observe(viewLifecycleOwner, { food ->
-            food?.let {
-                foodList.remove(food)
-                Timber.d("food list size: ${foodList.size}")
-                setupRecyclerView()
-                viewModel.clearLastRemovedFood()
+        viewModel.getFoodVieData().observe(viewLifecycleOwner, { viewData ->
+            viewData?.let {
+                when (viewData.state) {
+                    ViewData.ViewDataState.REFRESH -> {
+                        initData(viewData.data)
+                        Timber.d("ViewDataState = ${viewData.state}")
+                    }
+                    ViewData.ViewDataState.ADDED -> {
+                        setupRecyclerView(viewData.data)
+                        viewModel.idleFoodViewData()
+                        Timber.d("ViewDataState = ${viewData.state}")
+                    }
+                    ViewData.ViewDataState.DELETED -> {
+                        setupRecyclerView(viewData.data)
+                        viewModel.idleFoodViewData()
+                        Timber.d("ViewDataState = ${viewData.state}")
+                    }
+                }
             }
         })
 
@@ -151,17 +148,16 @@ class DefaultFragment : Fragment() {
         }
     }
 
-    private fun setupRecyclerView() {
+    private fun setupRecyclerView(foodList: ArrayList<Food>) {
         scaleLayoutManager = createLayoutManager()
         binding.content.recyclerView.layoutManager = scaleLayoutManager
         galleryAdapter = GalleryAdapter(this, foodList, viewModel)
         binding.content.recyclerView.adapter = galleryAdapter
     }
 
-    private fun initData(fList: List<Food>) {
-        this.foodList = ArrayList(fList)
+    private fun initData(fList: ArrayList<Food>) {
 
-        setupRecyclerView()
+        setupRecyclerView(fList)
         CenterSnapHelper().attachToRecyclerView(binding.content.recyclerView)
 
         if (BuildConfig.DEBUG) {

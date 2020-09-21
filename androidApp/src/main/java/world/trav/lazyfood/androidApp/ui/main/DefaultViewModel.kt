@@ -13,6 +13,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import world.trav.lazyfood.androidApp.R
+import world.trav.lazyfood.androidApp.ui.ViewData
 import world.trav.lazyfood.shared.Food
 import world.trav.lazyfood.shared.FoodRepository
 import world.trav.lazyfood.shared.Foods
@@ -24,56 +25,48 @@ import java.io.FileOutputStream
 // Created by  on 13/9/20.
 //
 
-class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepository) : ViewModel() {
+class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepository) :
+    ViewModel() {
 
-    private var foodList = MutableLiveData<ArrayList<Food>>()
-    private var lastInsertedFood = MutableLiveData<Food>()
-    private var lastRemovedFood = MutableLiveData<Food>()
+    private var foodList = ArrayList<Food>()
     private lateinit var foods: Foods
+    private var foodViewData = MutableLiveData<ViewData<ArrayList<Food>>>()
 
-    init{
+    init {
         loadFoods()
     }
 
-    fun voteFoodDown(index: Int){
+    fun getFoodVieData(): LiveData<ViewData<ArrayList<Food>>> {
+        return foodViewData
+    }
+
+    fun voteFoodDown(index: Int) {
         foods.voteDown(index)
         viewModelScope.launch {
             foodRepository.updateFood(foods.get(index))
         }
     }
 
-    fun voteFoodUp(index: Int){
+    fun voteFoodUp(index: Int) {
         foods.voteUp(index)
         viewModelScope.launch {
             foodRepository.updateFood(foods.get(index))
         }
     }
 
-    fun getFoodWeight(index: Int): Double{
+    fun getFoodWeight(index: Int): Double {
         return foods.get(index).weight
     }
 
-    fun getNextStopIndex(currentIndex: Int): Int{
+    fun getNextStopIndex(currentIndex: Int): Int {
         return foods.nextStopIndex(currentIndex)
-    }
-
-    fun getFoods(): LiveData<ArrayList<Food>> {
-        return foodList
-    }
-
-    fun getLastAddedFood(): LiveData<Food>{
-        return lastInsertedFood
-    }
-
-    fun getLastRemovedFood(): LiveData<Food>{
-        return lastRemovedFood
     }
 
     private fun loadFoods() {
         viewModelScope.launch {
             var foodList = foodRepository.getFoods().let {
                 val rs = ArrayList(it)
-                if(rs.size < 3){
+                if (rs.size < 3) {
                     rs.addAll(
                         arrayListOf(
                             Food.newInstance(R.drawable.food1),
@@ -86,11 +79,12 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
             }
 
             foods = Foods(foodList)
-            this@DefaultViewModel.foodList.postValue(foodList)
+            this@DefaultViewModel.foodList = foodList
+            foodViewData.postValue(ViewData(foodList, ViewData.ViewDataState.REFRESH))
         }
     }
 
-    fun addFoodByUri(context: Context, uri: Uri){
+    fun addFoodByUri(context: Context, uri: Uri) {
         viewModelScope.launch {
             val parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r", null)
             parcelFileDescriptor?.let {
@@ -102,17 +96,20 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
                 val id = foodRepository.insertFood(food)
                 food.id = id
                 Timber.d("food: id-${food.id}, image-${food.imagePath}")
-                lastInsertedFood.postValue(food)
+                foodList.add(0, food)
+                foodViewData.postValue(ViewData(foodList, ViewData.ViewDataState.ADDED))
             }
         }
     }
 
-    fun deleteFood(food: Food){
+    fun deleteFood(food: Food) {
         viewModelScope.launch {
-            foodList.value?.let{
-                foodRepository.deleteFood(food)
-                it.remove(food)
-                lastRemovedFood.postValue(food)
+            foodRepository.deleteFood(food)
+            foodList.remove(food)
+            if (foodList.isEmpty()) {
+                loadFoods()
+            } else {
+                foodViewData.postValue(ViewData(foodList, ViewData.ViewDataState.DELETED))
             }
         }
     }
@@ -130,11 +127,7 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
         return name
     }
 
-    fun clearLastAddedFood() {
-        lastInsertedFood.value = null
-    }
-
-    fun clearLastRemovedFood(){
-        lastRemovedFood.value = null
+    fun idleFoodViewData() {
+        foodViewData.value!!.state = ViewData.ViewDataState.IDLE
     }
 }
