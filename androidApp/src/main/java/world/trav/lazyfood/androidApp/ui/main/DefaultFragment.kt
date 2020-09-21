@@ -37,7 +37,6 @@ class DefaultFragment : Fragment() {
     private lateinit var scaleLayoutManager: MyScaleLayoutManager
     private lateinit var handler: Handler
     private val timeInterval = 100L
-    private lateinit var foods: Foods
     private lateinit var galleryAdapter: GalleryAdapter
     private var stopping: Boolean = false
     private var stopIndex: Int = Int.MIN_VALUE
@@ -55,9 +54,7 @@ class DefaultFragment : Fragment() {
             } else {
                 Timber.d(
                     "stopping autoplay, stopped at index ${scaleLayoutManager.currentPosition}, weight ${
-                        foods.get(
-                            scaleLayoutManager.currentPosition
-                        ).weight
+                        viewModel.getFoodWeight(scaleLayoutManager.currentPosition)
                     }"
                 )
                 stopping = false
@@ -100,7 +97,7 @@ class DefaultFragment : Fragment() {
             }
         })
 
-        viewModel.getLastRemovedFood().observe(viewLifecycleOwner,{ food ->
+        viewModel.getLastRemovedFood().observe(viewLifecycleOwner, { food ->
             food?.let {
                 foodList.remove(food)
                 Timber.d("food list size: ${foodList.size}")
@@ -125,17 +122,15 @@ class DefaultFragment : Fragment() {
                 handler.postDelayed(autoPlayRunnable, timeInterval)
             } else if (!stopping) {
                 stopping = true
-                stopIndex = foods.nextStopIndex(scaleLayoutManager.currentPosition)
+                stopIndex = viewModel.getNextStopIndex(scaleLayoutManager.currentPosition)
             }
         }
 
         binding.content.thumbDown.setOnClickListener {
-            foods.voteDown(scaleLayoutManager.currentPosition)
+            viewModel.voteFoodDown(scaleLayoutManager.currentPosition)
             Timber.d(
                 "thumbDown ${scaleLayoutManager.currentPosition}, foods[${scaleLayoutManager.currentPosition}].weight = ${
-                    foods.get(
-                        scaleLayoutManager.currentPosition
-                    ).weight
+                    viewModel.getFoodWeight(scaleLayoutManager.currentPosition)
                 }"
             )
             binding.content.emoji.setImageResource(R.drawable.sentiment_dissatisfied_24px)
@@ -144,20 +139,16 @@ class DefaultFragment : Fragment() {
         }
 
         binding.content.thumbUp.setOnClickListener {
-            foods.voteUp(scaleLayoutManager.currentPosition)
+            viewModel.voteFoodUp(scaleLayoutManager.currentPosition)
             Timber.d(
                 "thumbUp ${scaleLayoutManager.currentPosition}, foods[${scaleLayoutManager.currentPosition}].weight = ${
-                    foods.get(
-                        scaleLayoutManager.currentPosition
-                    ).weight
+                    viewModel.getFoodWeight(scaleLayoutManager.currentPosition)
                 }"
             )
             binding.content.emoji.setImageResource(R.drawable.sentiment_satisfied_24px)
             binding.content.emoji.alpha = 1f
             binding.content.emoji.animate().alpha(0f).setDuration(2000).setListener(null)
         }
-
-        viewModel.loadFoods()
     }
 
     private fun setupRecyclerView() {
@@ -169,8 +160,6 @@ class DefaultFragment : Fragment() {
 
     private fun initData(fList: List<Food>) {
         this.foodList = ArrayList(fList)
-
-        foods = Foods(foodList)
 
         setupRecyclerView()
         CenterSnapHelper().attachToRecyclerView(binding.content.recyclerView)
@@ -297,10 +286,8 @@ class DefaultFragment : Fragment() {
                             R.string.the_image_will_be_automatically_removed,
                             GROUP_SIZE.toString()
                         )
-                    )
-                        .setTitle(R.string.info)
-                    builder.setPositiveButton(R.string.ok,
-                        DialogInterface.OnClickListener { dialog, id -> dialog.dismiss() })
+                    ).setTitle(R.string.info)
+                    builder.setPositiveButton(R.string.ok) { dialog, id -> dialog.dismiss() }
                     builder.create().show()
                 } else {
                     viewModel.deleteFood(foods[position])

@@ -15,6 +15,7 @@ import timber.log.Timber
 import world.trav.lazyfood.androidApp.R
 import world.trav.lazyfood.shared.Food
 import world.trav.lazyfood.shared.FoodRepository
+import world.trav.lazyfood.shared.Foods
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -25,12 +26,33 @@ import java.io.FileOutputStream
 
 class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepository) : ViewModel() {
 
-    private var foods = MutableLiveData<ArrayList<Food>>()
+    private var foodList = MutableLiveData<ArrayList<Food>>()
     private var lastInsertedFood = MutableLiveData<Food>()
     private var lastRemovedFood = MutableLiveData<Food>()
+    private lateinit var foods: Foods
+
+    init{
+        loadFoods()
+    }
+
+    fun voteFoodDown(index: Int){
+        foods.voteDown(index)
+    }
+
+    fun voteFoodUp(index: Int){
+        foods.voteUp(index)
+    }
+
+    fun getFoodWeight(index: Int): Double{
+        return foods.get(index).weight
+    }
+
+    fun getNextStopIndex(currentIndex: Int): Int{
+        return foods.nextStopIndex(currentIndex)
+    }
 
     fun getFoods(): LiveData<ArrayList<Food>> {
-        return foods
+        return foodList
     }
 
     fun getLastAddedFood(): LiveData<Food>{
@@ -41,7 +63,7 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
         return lastRemovedFood
     }
 
-    fun loadFoods() {
+    private fun loadFoods() {
         viewModelScope.launch {
             var foodList = foodRepository.getFoods().let {
                 val rs = ArrayList(it)
@@ -57,7 +79,8 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
                 rs
             }
 
-            foods.postValue(foodList)
+            foods = Foods(foodList)
+            this@DefaultViewModel.foodList.postValue(foodList)
         }
     }
 
@@ -80,7 +103,7 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
 
     fun deleteFood(food: Food){
         viewModelScope.launch {
-            foods.value?.let{
+            foodList.value?.let{
                 foodRepository.deleteFood(food)
                 it.remove(food)
                 lastRemovedFood.postValue(food)
