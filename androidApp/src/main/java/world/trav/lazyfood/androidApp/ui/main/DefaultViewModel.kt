@@ -25,15 +25,20 @@ import java.io.FileOutputStream
 
 class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepository) : ViewModel() {
 
-    private var foods = MutableLiveData<List<Food>>()
+    private var foods = MutableLiveData<ArrayList<Food>>()
     private var lastInsertedFood = MutableLiveData<Food>()
+    private var lastRemovedFood = MutableLiveData<Food>()
 
-    fun getFoods(): LiveData<List<Food>> {
+    fun getFoods(): LiveData<ArrayList<Food>> {
         return foods
     }
 
     fun getLastAddedFood(): LiveData<Food>{
         return lastInsertedFood
+    }
+
+    fun getLastRemovedFood(): LiveData<Food>{
+        return lastRemovedFood
     }
 
     fun loadFoods() {
@@ -73,6 +78,15 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
         }
     }
 
+    fun deleteFood(food: Food){
+        viewModelScope.launch {
+            foods.value?.let{
+                foodRepository.deleteFood(food)
+                it.remove(food)
+                lastRemovedFood.postValue(food)
+            }
+        }
+    }
 
     private fun ContentResolver.getFileName(fileUri: Uri): String {
         var name = ""
@@ -85,5 +99,13 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
         }
 
         return name
+    }
+
+    fun clearLastAddedFood() {
+        lastInsertedFood.value = null
+    }
+
+    fun clearLastRemovedFood(){
+        lastRemovedFood.value = null
     }
 }

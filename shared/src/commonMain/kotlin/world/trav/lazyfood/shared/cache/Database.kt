@@ -33,6 +33,10 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
         return id
     }
 
+    fun deleteFood(food: Food){
+        dbQuery.removeFoodById(food.id)
+    }
+
     private fun mapFood(id: Long, imagePath: String): Food{
         return Food().also {
             it.id = id

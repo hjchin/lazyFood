@@ -1,15 +1,11 @@
 package world.trav.lazyfood.androidApp.ui.main
 
-import android.content.ContentResolver
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.os.FileUtils
 import android.os.Handler
 import android.os.Looper
-import android.provider.OpenableColumns
 import android.view.*
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
@@ -30,10 +26,7 @@ import world.trav.lazyfood.androidApp.utils.fadeOut
 import world.trav.lazyfood.shared.Food
 import world.trav.lazyfood.shared.Foods
 import world.trav.lazyfood.shared.Foods.Companion.GROUP_SIZE
-import java.io.File
-import java.io.FileInputStream
 import kotlin.math.roundToInt
-import java.io.FileOutputStream as FileOutputStream
 
 @AndroidEntryPoint
 class DefaultFragment : Fragment() {
@@ -100,11 +93,19 @@ class DefaultFragment : Fragment() {
 
         viewModel.getLastAddedFood().observe(viewLifecycleOwner, { food ->
             food?.let {
-                foodList.add(0,food)
+                foodList.add(0, food)
                 Timber.d("food list size: ${foodList.size}")
-                scaleLayoutManager = createLayoutManager()
-                binding.content.recyclerView.layoutManager = scaleLayoutManager
-                binding.content.recyclerView.adapter = GalleryAdapter(this, foodList)
+                setupRecyclerView()
+                viewModel.clearLastAddedFood()
+            }
+        })
+
+        viewModel.getLastRemovedFood().observe(viewLifecycleOwner,{ food ->
+            food?.let {
+                foodList.remove(food)
+                Timber.d("food list size: ${foodList.size}")
+                setupRecyclerView()
+                viewModel.clearLastRemovedFood()
             }
         })
 
@@ -159,11 +160,20 @@ class DefaultFragment : Fragment() {
         viewModel.loadFoods()
     }
 
+    private fun setupRecyclerView() {
+        scaleLayoutManager = createLayoutManager()
+        binding.content.recyclerView.layoutManager = scaleLayoutManager
+        galleryAdapter = GalleryAdapter(this, foodList, viewModel)
+        binding.content.recyclerView.adapter = galleryAdapter
+    }
+
     private fun initData(fList: List<Food>) {
         this.foodList = ArrayList(fList)
 
         foods = Foods(foodList)
-        galleryAdapter = GalleryAdapter(this, foodList)
+
+        setupRecyclerView()
+        CenterSnapHelper().attachToRecyclerView(binding.content.recyclerView)
 
         if (BuildConfig.DEBUG) {
             binding.content.message.text =
@@ -171,11 +181,6 @@ class DefaultFragment : Fragment() {
         } else {
             binding.content.message.visibility = View.GONE
         }
-
-        scaleLayoutManager = createLayoutManager()
-        binding.content.recyclerView.layoutManager = scaleLayoutManager
-        binding.content.recyclerView.adapter = galleryAdapter
-        CenterSnapHelper().attachToRecyclerView(binding.content.recyclerView)
 
         binding.loading.container.fadeOut()
         binding.content.container.fadeIn()
@@ -234,7 +239,7 @@ class DefaultFragment : Fragment() {
             val image = ImagePicker.getFirstImageOrNull(data)
 
             image?.let {
-                context?.let{
+                context?.let {
                     viewModel.addFoodByUri(it, image.uri)
                 }
             }
@@ -251,7 +256,11 @@ class DefaultFragment : Fragment() {
         }
     }
 
-    class GalleryAdapter(private val fragment: Fragment, private val foods: List<Food>) :
+    class GalleryAdapter(
+        private val fragment: Fragment,
+        private val foods: ArrayList<Food>,
+        private val viewModel: DefaultViewModel
+    ) :
         RecyclerView.Adapter<GalleryAdapter.ViewHolder>() {
 
         class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -281,13 +290,20 @@ class DefaultFragment : Fragment() {
             } ?: Glide.with(fragment).load(foods[position].imagePath).into(binding.imageView)
 
             binding.delete.setOnClickListener {
-                if(foods[position].isDefault){
-                    val builder =  AlertDialog.Builder(fragment.requireContext())
-                    builder.setMessage(fragment.getString(R.string.the_image_will_be_automatically_removed, GROUP_SIZE.toString()))
+                if (foods[position].isDefault) {
+                    val builder = AlertDialog.Builder(fragment.requireContext())
+                    builder.setMessage(
+                        fragment.getString(
+                            R.string.the_image_will_be_automatically_removed,
+                            GROUP_SIZE.toString()
+                        )
+                    )
                         .setTitle(R.string.info)
                     builder.setPositiveButton(R.string.ok,
-                        DialogInterface.OnClickListener { dialog, id -> dialog.dismiss()})
+                        DialogInterface.OnClickListener { dialog, id -> dialog.dismiss() })
                     builder.create().show()
+                } else {
+                    viewModel.deleteFood(foods[position])
                 }
             }
         }

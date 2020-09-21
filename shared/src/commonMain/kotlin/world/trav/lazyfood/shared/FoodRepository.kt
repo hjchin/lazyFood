@@ -18,4 +18,8 @@ class FoodRepository(databaseDriverFactory: DatabaseDriverFactory){
     @Throws(Exception::class) suspend fun insertFood(food: Food): Long{
         return database.insertFood(food)
     }
+
+    @Throws(Exception::class) suspend fun deleteFood(food: Food){
+        return database.deleteFood(food)
+    }
 }
