@@ -1,14 +1,21 @@
 CREATE TABLE Food(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    imagePath TEXT NOT NULL
+    imagePath TEXT NOT NULL,
+    weight REAL NOT NULL
 );
 
 insertFood:
-INSERT INTO Food(imagePath)
-VALUES(?);
+INSERT INTO Food(imagePath, weight)
+VALUES(?, ?);
 
 removeFoodById:
 DELETE FROM Food
+WHERE id = ?;
+
+updateFoodById:
+UPDATE Food
+SET imagePath = ?,
+    weight = ?
 WHERE id = ?;
 
 selectAllFood:

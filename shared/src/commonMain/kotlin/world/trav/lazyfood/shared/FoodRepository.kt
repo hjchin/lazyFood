@@ -20,6 +20,10 @@ class FoodRepository(databaseDriverFactory: DatabaseDriverFactory){
     }
 
     @Throws(Exception::class) suspend fun deleteFood(food: Food){
-        return database.deleteFood(food)
+        database.deleteFood(food)
+    }
+
+    @Throws(Exception::class) suspend fun updateFood(food: Food){
+        database.updateFood(food)
     }
 }

@@ -26,21 +26,26 @@ class Database(databaseDriverFactory: DatabaseDriverFactory) {
         var id: Long = 0
 
         dbQuery.transaction {
-            dbQuery.insertFood(food.imagePath)
+            dbQuery.insertFood(food.imagePath, food.weight)
             id = dbQuery.selectLastInsertedFood().executeAsOne()
         }
 
         return id
     }
 
+    fun updateFood(food: Food){
+        dbQuery.updateFoodById(food.imagePath,food.weight, food.id)
+    }
+
     fun deleteFood(food: Food){
         dbQuery.removeFoodById(food.id)
     }
 
-    private fun mapFood(id: Long, imagePath: String): Food{
+    private fun mapFood(id: Long, imagePath: String, weight: Double): Food{
         return Food().also {
             it.id = id
             it.imagePath = imagePath
+            it.weight = weight
         }
     }
 }

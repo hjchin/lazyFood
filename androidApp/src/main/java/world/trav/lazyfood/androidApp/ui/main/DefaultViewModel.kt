@@ -37,10 +37,16 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
 
     fun voteFoodDown(index: Int){
         foods.voteDown(index)
+        viewModelScope.launch {
+            foodRepository.updateFood(foods.get(index))
+        }
     }
 
     fun voteFoodUp(index: Int){
         foods.voteUp(index)
+        viewModelScope.launch {
+            foodRepository.updateFood(foods.get(index))
+        }
     }
 
     fun getFoodWeight(index: Int): Double{
