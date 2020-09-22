@@ -13,7 +13,6 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import world.trav.lazyfood.androidApp.R
-import world.trav.lazyfood.androidApp.ui.ViewData
 import world.trav.lazyfood.shared.Food
 import world.trav.lazyfood.shared.FoodRepository
 import world.trav.lazyfood.shared.Foods

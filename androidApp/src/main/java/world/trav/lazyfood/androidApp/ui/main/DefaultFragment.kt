@@ -1,7 +1,6 @@
 package world.trav.lazyfood.androidApp.ui.main
 
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -21,11 +20,9 @@ import world.trav.lazyfood.androidApp.BuildConfig
 import world.trav.lazyfood.androidApp.R
 import world.trav.lazyfood.androidApp.databinding.DefaultFragmentBinding
 import world.trav.lazyfood.androidApp.databinding.GalleryItemBinding
-import world.trav.lazyfood.androidApp.ui.ViewData
 import world.trav.lazyfood.androidApp.utils.fadeIn
 import world.trav.lazyfood.androidApp.utils.fadeOut
 import world.trav.lazyfood.shared.Food
-import world.trav.lazyfood.shared.Foods
 import world.trav.lazyfood.shared.Foods.Companion.GROUP_SIZE
 import kotlin.math.roundToInt
 
