@@ -4,4 +4,5 @@
     <string name="info">Info</string>
     <string name="the_image_will_be_automatically_removed">The default images will be automatically removed when you have added %s images.</string>
     <string name="ok">Ok</string>
+    <string name="app_name_with_count_template">%s (%s)</string>
 </resources>

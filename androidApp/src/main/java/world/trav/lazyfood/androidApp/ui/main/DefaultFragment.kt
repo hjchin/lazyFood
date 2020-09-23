@@ -17,6 +17,7 @@ import com.leochuan.ScaleLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 import world.trav.lazyfood.androidApp.BuildConfig
+import world.trav.lazyfood.androidApp.DefaultActivity
 import world.trav.lazyfood.androidApp.R
 import world.trav.lazyfood.androidApp.databinding.DefaultFragmentBinding
 import world.trav.lazyfood.androidApp.databinding.GalleryItemBinding
@@ -88,11 +89,13 @@ class DefaultFragment : Fragment() {
                     }
                     ViewData.ViewDataState.ADDED -> {
                         setupRecyclerView(viewData.data)
+                        updateAppTitle(viewData.data.size)
                         viewModel.idleFoodViewData()
                         Timber.d("ViewDataState = ${viewData.state}")
                     }
                     ViewData.ViewDataState.DELETED -> {
                         setupRecyclerView(viewData.data)
+                        updateAppTitle(viewData.data.size)
                         viewModel.idleFoodViewData()
                         Timber.d("ViewDataState = ${viewData.state}")
                     }
@@ -156,16 +159,14 @@ class DefaultFragment : Fragment() {
 
         setupRecyclerView(fList)
         CenterSnapHelper().attachToRecyclerView(binding.content.recyclerView)
-
-        if (BuildConfig.DEBUG) {
-            binding.content.message.text =
-                getString(R.string.food_selection, fList.size.toString())
-        } else {
-            binding.content.message.visibility = View.GONE
-        }
+        updateAppTitle(fList.size)
 
         binding.loading.container.fadeOut()
         binding.content.container.fadeIn()
+    }
+
+    private fun updateAppTitle(value: Int){
+        (activity as DefaultActivity).setTitle(getString(R.string.app_name_with_count_template, getString(R.string.app_name), value.toString()))
     }
 
     private fun createLayoutManager(): MyScaleLayoutManager {
