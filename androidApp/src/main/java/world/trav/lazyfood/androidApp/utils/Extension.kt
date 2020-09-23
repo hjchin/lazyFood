@@ -7,16 +7,26 @@ import android.view.View
 //
 // Created by HJ Chin on 14/9/20.
 //
-fun View.fadeOut(){
-    this.animate().alpha(0f).setDuration(1000).setListener(object: AnimatorListenerAdapter(){
+fun View.fadeOut() {
+    this.animate().alpha(0f).setDuration(1000).setListener(object : AnimatorListenerAdapter() {
         override fun onAnimationEnd(animation: Animator) {
             this@fadeOut.visibility = View.GONE
         }
     })
 }
 
-fun View.fadeIn(){
+fun View.fadeIn() {
     this.alpha = 0f
     this.visibility = View.VISIBLE
     this.animate().alpha(1f).duration = 2000
+}
+
+fun View.viewGone() {
+    this.alpha = 1f
+    this.visibility = View.GONE
+}
+
+fun View.viewVisible() {
+    this.alpha = 1f
+    this.visibility = View.VISIBLE
 }

@@ -83,21 +83,24 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
         }
     }
 
-    fun addFoodByUri(context: Context, uri: Uri) {
+    fun addFoodByUris(context: Context, uris: List<Uri>) {
         viewModelScope.launch {
-            val parcelFileDescriptor = context.contentResolver.openFileDescriptor(uri, "r", null)
-            parcelFileDescriptor?.let {
-                val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
-                val file = File(context.cacheDir, context.contentResolver.getFileName(uri))
-                val outputStream = FileOutputStream(file)
-                FileUtils.copy(inputStream, outputStream)
-                val food = Food.newInstance(file.path)
-                val id = foodRepository.insertFood(food)
-                food.id = id
-                Timber.d("food: id-${food.id}, image-${food.imagePath}")
-                foodList.add(0, food)
-                foodViewData.postValue(ViewData(foodList, ViewData.ViewDataState.ADDED))
+            uris.forEach { uri ->
+                val parcelFileDescriptor =
+                    context.contentResolver.openFileDescriptor(uri, "r", null)
+                parcelFileDescriptor?.let {
+                    val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
+                    val file = File(context.cacheDir, context.contentResolver.getFileName(uri))
+                    val outputStream = FileOutputStream(file)
+                    FileUtils.copy(inputStream, outputStream)
+                    val food = Food.newInstance(file.path)
+                    val id = foodRepository.insertFood(food)
+                    food.id = id
+                    Timber.d("food: id-${food.id}, image-${food.imagePath}")
+                    foodList.add(0, food)
+                }
             }
+            foodViewData.postValue(ViewData(foodList, ViewData.ViewDataState.ADDED))
         }
     }
 

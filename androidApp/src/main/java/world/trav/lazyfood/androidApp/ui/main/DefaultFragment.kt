@@ -25,6 +25,8 @@ import world.trav.lazyfood.androidApp.databinding.DefaultFragmentBinding
 import world.trav.lazyfood.androidApp.databinding.GalleryItemBinding
 import world.trav.lazyfood.androidApp.utils.fadeIn
 import world.trav.lazyfood.androidApp.utils.fadeOut
+import world.trav.lazyfood.androidApp.utils.viewGone
+import world.trav.lazyfood.androidApp.utils.viewVisible
 import world.trav.lazyfood.shared.Food
 import world.trav.lazyfood.shared.Foods.Companion.GROUP_SIZE
 import kotlin.math.roundToInt
@@ -89,16 +91,13 @@ class DefaultFragment : Fragment() {
                         initData(viewData.data)
                         Timber.d("ViewDataState = ${viewData.state}")
                     }
-                    ViewData.ViewDataState.ADDED -> {
-                        setupRecyclerView(viewData.data)
-                        updateAppTitle(viewData.data.size)
-                        viewModel.idleFoodViewData()
-                        Timber.d("ViewDataState = ${viewData.state}")
-                    }
+                    ViewData.ViewDataState.ADDED,
                     ViewData.ViewDataState.DELETED -> {
                         setupRecyclerView(viewData.data)
                         updateAppTitle(viewData.data.size)
                         viewModel.idleFoodViewData()
+                        binding.loading.container.fadeOut()
+                        binding.content.container.fadeIn()
                         Timber.d("ViewDataState = ${viewData.state}")
                     }
                 }
@@ -107,8 +106,8 @@ class DefaultFragment : Fragment() {
 
         handler = Handler(Looper.getMainLooper())
 
-        binding.content.container.visibility = View.GONE
-        binding.loading.container.visibility = View.VISIBLE
+        binding.content.container.viewGone()
+        binding.loading.container.viewVisible()
 
         binding.content.fab.setOnClickListener {
 
@@ -240,12 +239,14 @@ class DefaultFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (ImagePicker.shouldHandle(requestCode, resultCode, data)) {
+            binding.content.container.viewGone()
+            binding.loading.container.viewVisible()
             Timber.d("image return ${ImagePicker.getFirstImageOrNull(data)}")
-            val image = ImagePicker.getFirstImageOrNull(data)
-
-            image?.let {
+            val images = ImagePicker.getImages(data)
+            images?.let {
                 context?.let {
-                    viewModel.addFoodByUri(it, image.uri)
+                    val uris = images.map { it -> it.uri }
+                    viewModel.addFoodByUris(requireContext(), uris)
                 }
             }
         }
