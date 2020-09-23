@@ -226,7 +226,11 @@ class DefaultFragment : Fragment() {
         return when (item?.itemId) {
             R.id.action_add -> {
                 Timber.d("on add food photo")
-                ImagePicker.create(this).start()
+                ImagePicker.create(this)
+                    .includeVideo(false)
+                    .limit(10)
+                    .theme(R.style.ImagePickerTheme)
+                    .start()
                 true
             }
             else -> super.onOptionsItemSelected(item)
