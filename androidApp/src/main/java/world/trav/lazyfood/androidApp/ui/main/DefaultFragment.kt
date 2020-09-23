@@ -6,7 +6,9 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.*
+import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
@@ -130,9 +132,8 @@ class DefaultFragment : Fragment() {
                     viewModel.getFoodWeight(scaleLayoutManager.currentPosition)
                 }"
             )
-            binding.content.emoji.setImageResource(R.drawable.sentiment_dissatisfied_24px)
-            binding.content.emoji.alpha = 1f
-            binding.content.emoji.animate().alpha(0f).setDuration(2000).setListener(null)
+
+            showEmoji(R.drawable.sentiment_very_dissatisfied_24px)
         }
 
         binding.content.thumbUp.setOnClickListener {
@@ -142,10 +143,21 @@ class DefaultFragment : Fragment() {
                     viewModel.getFoodWeight(scaleLayoutManager.currentPosition)
                 }"
             )
-            binding.content.emoji.setImageResource(R.drawable.sentiment_satisfied_24px)
-            binding.content.emoji.alpha = 1f
-            binding.content.emoji.animate().alpha(0f).setDuration(2000).setListener(null)
+
+            showEmoji(R.drawable.sentiment_very_satisfied_24px)
         }
+    }
+
+    private fun showEmoji(resourceId: Int) {
+        binding.content.recyclerView.findViewHolderForAdapterPosition(scaleLayoutManager.currentPosition)
+            ?.let { it ->
+                it.itemView.findViewById<ConstraintLayout>(R.id.emoji)?.also { v ->
+                    v.findViewById<ImageView>(R.id.emojiIcon)
+                        .setImageResource(resourceId)
+                    v.alpha = 1f
+                    v.animate().alpha(0f).setDuration(2000).setListener(null)
+                }
+            }
     }
 
     private fun setupRecyclerView(foodList: ArrayList<Food>) {
@@ -165,8 +177,14 @@ class DefaultFragment : Fragment() {
         binding.content.container.fadeIn()
     }
 
-    private fun updateAppTitle(value: Int){
-        (activity as DefaultActivity).setTitle(getString(R.string.app_name_with_count_template, getString(R.string.app_name), value.toString()))
+    private fun updateAppTitle(value: Int) {
+        (activity as DefaultActivity).setTitle(
+            getString(
+                R.string.app_name_with_count_template,
+                getString(R.string.app_name),
+                value.toString()
+            )
+        )
     }
 
     private fun createLayoutManager(): MyScaleLayoutManager {

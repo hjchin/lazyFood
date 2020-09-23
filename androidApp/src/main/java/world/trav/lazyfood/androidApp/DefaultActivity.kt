@@ -22,7 +22,7 @@ class DefaultActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    public fun setTitle(value: String){
+    fun setTitle(value: String){
         findViewById<Toolbar>(R.id.toolbar).title = value
     }
 
