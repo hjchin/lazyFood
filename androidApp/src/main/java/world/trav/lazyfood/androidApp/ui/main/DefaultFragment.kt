@@ -1,6 +1,5 @@
 package world.trav.lazyfood.androidApp.ui.main
 
-import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -32,7 +31,6 @@ import world.trav.lazyfood.androidApp.utils.viewGone
 import world.trav.lazyfood.androidApp.utils.viewVisible
 import world.trav.lazyfood.shared.Food
 import world.trav.lazyfood.shared.Foods.Companion.GROUP_SIZE
-import java.io.File
 import kotlin.math.roundToInt
 
 @AndroidEntryPoint
