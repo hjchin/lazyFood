@@ -1,8 +1,10 @@
 package world.trav.lazyfood.androidApp.ui.main
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.view.*
@@ -14,6 +16,7 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.esafirm.imagepicker.features.ImagePicker
+import com.esafirm.imagepicker.features.ReturnMode
 import com.leochuan.CenterSnapHelper
 import com.leochuan.ScaleLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,6 +32,7 @@ import world.trav.lazyfood.androidApp.utils.viewGone
 import world.trav.lazyfood.androidApp.utils.viewVisible
 import world.trav.lazyfood.shared.Food
 import world.trav.lazyfood.shared.Foods.Companion.GROUP_SIZE
+import java.io.File
 import kotlin.math.roundToInt
 
 @AndroidEntryPoint
@@ -225,11 +229,22 @@ class DefaultFragment : Fragment() {
         return when (item?.itemId) {
             R.id.action_add -> {
                 Timber.d("on add food photo")
-                ImagePicker.create(this)
+
+                val imagePicker = ImagePicker.create(this@DefaultFragment)
                     .includeVideo(false)
+                    .showCamera(true)
+                    .folderMode(true)
+                    .returnMode(ReturnMode.NONE)
+                    .multi()
                     .limit(10)
                     .theme(R.style.ImagePickerTheme)
-                    .start()
+                    .imageFullDirectory(Environment.getExternalStorageDirectory().path)
+
+                if (BuildConfig.DEBUG) {
+                    imagePicker.enableLog(true)
+                }
+
+                imagePicker.start()
                 true
             }
             else -> super.onOptionsItemSelected(item)

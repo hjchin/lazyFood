@@ -41,7 +41,7 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.11.0")
     implementation("com.jakewharton.timber:timber:4.7.1")
     implementation("rouchuan.viewpagerlayoutmanager:viewpagerlayoutmanager:2.0.22")
-    implementation("com.github.esafirm.android-image-picker:imagepicker:2.3.2")
+    implementation("com.github.esafirm.android-image-picker:imagepicker:2.4.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")

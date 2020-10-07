@@ -90,10 +90,15 @@ class DefaultViewModel @ViewModelInject constructor(var foodRepository: FoodRepo
                     context.contentResolver.openFileDescriptor(uri, "r", null)
                 parcelFileDescriptor?.let {
                     val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
-                    val file = File(context.cacheDir, context.contentResolver.getFileName(uri))
-                    val outputStream = FileOutputStream(file)
-                    FileUtils.copy(inputStream, outputStream)
-                    val food = Food.newInstance(file.path)
+                    val outputFile = File(context.cacheDir, context.contentResolver.getFileName(uri))
+
+                    inputStream.use { input ->
+                        outputFile.outputStream().use { output ->
+                            input.copyTo(output)
+                        }
+                    }
+
+                    val food = Food.newInstance(outputFile.path)
                     val id = foodRepository.insertFood(food)
                     food.id = id
                     Timber.d("food: id-${food.id}, image-${food.imagePath}")
